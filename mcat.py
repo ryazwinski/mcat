@@ -32,7 +32,7 @@ class Mcat():
 
             self._processes.append([c, p])
 
-    def run(self, timeout=1):
+    def run(self, timeout=1.0):
         while True:
             stderr_list = []
             stdout_list = []
@@ -66,13 +66,15 @@ if __name__ == '__main__':
     arguments = docopt(__doc__)
 
     try:
-        if not arguments.has_key('<cmd>'):
-            raise Exception('No <cmd> argument!  Huh!?!')
-        
         if len(arguments['<cmd>']):
             mcat = Mcat(arguments['<cmd>'])
 
-            timeout = float(arguments.get('-t', 1))
+            timeout = arguments.get('-t')
+            if timeout is not None:
+                timeout = float(timeout)
+            else:
+                timeout = 1.0
+
             mcat.run(timeout)
 
     except Exception as e:
