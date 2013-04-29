@@ -30,16 +30,26 @@ class Mcat():
             p=subprocess.Popen(self._split_command(c), stdout=subprocess.PIPE,stderr=subprocess.PIPE,
                 stdin=None, universal_newlines=True)
 
-            self._processes.append(p)
+            self._processes.append([c, p])
 
     def run(self):
-        stderr_list=[x.stderr for x in self._processes]
-        stdout_list=[x.stdout for x in self._processes]
-
-        reads=stderr_list + stdout_list
-
         while True:
+            stderr_list = []
+            stdout_list = []
+            for [cmd, p] in self._processes:
+                if p.poll() == 0:
+                    print colored('Cmd [%s] exited.' % cmd, 'red')
+                    self._processes.remove([cmd,p])
+                else:
+                    stderr_list.append(p.stderr)
+                    stdout_list.append(p.stdout)
+
+            reads=stderr_list + stdout_list
+            if len(reads) == 0:
+                return
+
             (read_list, write_list, except_list) = select.select(reads, [], [], 1)
+
             for e in read_list:
                 line=e.readline().strip()
                 if e in stderr_list:
