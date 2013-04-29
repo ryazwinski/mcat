@@ -10,6 +10,12 @@ Options:
 import select
 import subprocess
 
+try:
+    from termcolor import colored
+except:
+    def colored(text, *args, **kwargs):
+        return text
+
 class Mcat():
 
     _processes = []
@@ -21,16 +27,26 @@ class Mcat():
 
     def __init__(self, commands):
         for c in commands:
-            p=subprocess.Popen(self._split_command(c), stdout=subprocess.PIPE,stderr=subprocess.STDOUT, stdin=None, universal_newlines=True)
+            p=subprocess.Popen(self._split_command(c), stdout=subprocess.PIPE,stderr=subprocess.PIPE,
+                stdin=None, universal_newlines=True)
+
             self._processes.append(p)
 
     def run(self):
-        reads=[x.stdout for x in self._processes]
+        stderr_list=[x.stderr for x in self._processes]
+        stdout_list=[x.stdout for x in self._processes]
+
+        reads=stderr_list + stdout_list
 
         while True:
             (read_list, write_list, except_list) = select.select(reads, [], [], 1)
             for e in read_list:
-                print e.readline().strip()
+                line=e.readline().strip()
+                if e in stderr_list:
+                    out=colored(line, attrs=['reverse'])
+                else:
+                    out=line
+                print out
 
 
 if __name__ == '__main__':
