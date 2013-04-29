@@ -32,12 +32,12 @@ class Mcat():
 
             self._processes.append([c, p])
 
-    def run(self):
+    def run(self, timeout=1):
         while True:
             stderr_list = []
             stdout_list = []
             for [cmd, p] in self._processes:
-                if p.poll() == 0:
+                if p.poll() is not None:
                     print colored('Cmd [%s] exited.' % cmd, 'red')
                     self._processes.remove([cmd,p])
                 else:
@@ -48,7 +48,7 @@ class Mcat():
             if len(reads) == 0:
                 return
 
-            (read_list, write_list, except_list) = select.select(reads, [], [], 1)
+            (read_list, write_list, except_list) = select.select(reads, [], [], timeout)
 
             for e in read_list:
                 line=e.readline().strip()
@@ -71,7 +71,9 @@ if __name__ == '__main__':
         
         if len(arguments['<cmd>']):
             mcat = Mcat(arguments['<cmd>'])
-            mcat.run()
+
+            timeout = float(arguments.get('-t', 1))
+            mcat.run(timeout)
 
     except Exception as e:
         print 'Fatal problem encountered: ', type(e)
