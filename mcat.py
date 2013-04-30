@@ -22,7 +22,7 @@ except:
 
 class Mcat():
 
-    _processes = []
+    _processes = {}
 
     def _split_command(self, cmd):
         import re
@@ -34,7 +34,7 @@ class Mcat():
             p=subprocess.Popen(self._split_command(c), stdout=subprocess.PIPE,stderr=subprocess.PIPE,
                 stdin=None, universal_newlines=True)
 
-            self._processes.append([c, p, color_iterator.next() if color_iterator else None])
+            self._processes[p] = [c, color_iterator.next() if color_iterator else None]
 
         print self._processes
 
@@ -42,10 +42,11 @@ class Mcat():
         while True:
             stderr_list = []
             stdout_list = []
-            for [cmd, p, color] in self._processes:
+            for p in self._processes.keys():
+                (cmd,color) = self._processes[p]
                 if p.poll() is not None:
                     print colored('Cmd [%s] exited.' % cmd, 'red')
-                    self._processes.remove([cmd, p, color])
+                    del(self._processes[p])
                 else:
                     stderr_list.append(p.stderr)
                     stdout_list.append(p.stdout)
@@ -58,6 +59,12 @@ class Mcat():
 
             for e in read_list:
                 line=e.readline().strip()
+                color = 'green'
+                for elem in self._processes.keys():
+                    if e in (elem.stderr, elem.stdout):
+                        color = self._processes[elem][1]
+                        break
+
                 print 'line color is ' + color
                 if e in stderr_list:
                     out=colored(line, color=color, attrs=['reverse'])
