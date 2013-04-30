@@ -2,11 +2,12 @@
 """Image Manager CLI Interface
 
 Usage:
-    mcat.py [-t <update>] [-c] [-s color:color:color:...] [<cmd>...]
+    mcat.py [-t <update>] [-c] [-a color:color:color:...] [-s color:color:color:...] [<cmd>...]
 
 Options:
     -t <update>                 Timeout on checking for updates. Default is 1s.
     -c                          Auto colorize commands
+    -a color:color:color:...    When auto colorizing avoid the listed colors
     -s color:color:color:...    Colorize commands as defined. If there are more commands
                                 than colors the 1st will be used as default.
 """
@@ -97,6 +98,16 @@ if __name__ == '__main__':
             color_iterator = None
             auto_colorize = arguments.get('-c')
             if auto_colorize:
+                avoid = arguments['-a']
+                if avoid:
+                    avoid_list = ':'.join(avoid).split(':')
+                    for e in avoid_list:
+                        if COLORS.has_key(e):
+                            del(COLORS[e])
+                    if len(COLORS) < 1:
+                        print colored('No colors left - exiting.')
+                        sys.exit(1)
+
                 color_iterator = color_picker()
             else:
                 cmd_line_colors = arguments['-s']
