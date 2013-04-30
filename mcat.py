@@ -36,8 +36,6 @@ class Mcat():
 
             self._processes[p] = [c, color_iterator.next() if color_iterator else None]
 
-        print self._processes
-
     def run(self, timeout=1.0):
         while True:
             stderr_list = []
@@ -65,11 +63,11 @@ class Mcat():
                         color = self._processes[elem][1]
                         break
 
-                print 'line color is ' + color
                 if e in stderr_list:
                     out=colored(line, color=color, attrs=['reverse'])
                 else:
                     out=colored(line, color=color)
+
                 print out
 
 def color_picker(color_list=None):
