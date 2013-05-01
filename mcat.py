@@ -88,7 +88,10 @@ def color_picker(color_list=None):
         while True:
             yield color_list[0]
 
-
+def validate_color_list(color_list):
+    unknown_colors = set(color_list)-set(COLORS.keys())
+    if len(unknown_colors) > 0:
+        raise Exception('Unknown colors: %s' % ', '.join(list(unknown_colors)))
 
 if __name__ == '__main__':
     import sys
@@ -104,6 +107,7 @@ if __name__ == '__main__':
                 avoid = arguments['-a']
                 if avoid:
                     avoid_list = ':'.join(avoid).split(':')
+                    validate_color_list(avoid_list)
                     for e in avoid_list:
                         if COLORS.has_key(e):
                             del(COLORS[e])
@@ -117,6 +121,7 @@ if __name__ == '__main__':
                 if len(cmd_line_colors):
                     # may be multiple -s on cli, so join them with a :, then create a list
                     color_list = ':'.join(cmd_line_colors).split(':')
+                    validate_color_list(color_list)
                     color_iterator = color_picker(color_list)
 
             mcat = Mcat(arguments['<cmd>'], color_iterator)
@@ -133,6 +138,5 @@ if __name__ == '__main__':
         print 'Fatal problem encountered: ', type(e)
         print '\t', e
         print 'mcat will now exit...\n'
-        raise
     except KeyboardInterrupt:
         pass
