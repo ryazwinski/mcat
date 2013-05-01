@@ -62,9 +62,10 @@ class Mcat():
 
             for e in read_list:
                 line = e.readline().strip()
-                color = 'green'
                 if self._colors.has_key(e):
                     color = self._colors[e]
+                else:
+                    color = 'green'
 
                 if e in stderr_list:
                     out = colored(line, color=color, attrs=['reverse'])
