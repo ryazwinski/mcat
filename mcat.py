@@ -93,7 +93,7 @@ def validate_color_list(color_list):
     if len(unknown_colors) > 0:
         raise Exception('Unknown colors: %s' % ', '.join(list(unknown_colors)))
 
-if __name__ == '__main__':
+def main():
     import sys
     from docopt import docopt
 
@@ -140,3 +140,6 @@ if __name__ == '__main__':
         print 'mcat will now exit...\n'
     except KeyboardInterrupt:
         pass
+
+if __name__ == '__main__':
+    main()
