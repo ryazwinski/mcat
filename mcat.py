@@ -24,6 +24,7 @@ except:
 class Mcat():
 
     _processes = {}
+    _colors = {}
 
     def _split_command(self, cmd):
         import re
@@ -35,39 +36,40 @@ class Mcat():
             p=subprocess.Popen(self._split_command(c), stdout=subprocess.PIPE,stderr=subprocess.PIPE,
                 stdin=None, universal_newlines=True)
 
-            self._processes[p] = [c, color_iterator.next() if color_iterator else None]
+            self._processes[p] = c
+            self._colors[p.stderr] = self._colors[p.stdout] = color_iterator.next() if color_iterator else None
 
     def run(self, timeout=1.0):
         while True:
             stderr_list = []
             stdout_list = []
             for p in self._processes.keys():
-                (cmd,color) = self._processes[p]
                 if p.poll() is not None:
+                    cmd = self._processes[p]
                     print colored('Cmd [%s] exited.' % cmd, 'red')
                     del(self._processes[p])
+                    del(self._colors[p.stderr])
+                    del(self._colors[p.stdout])
                 else:
                     stderr_list.append(p.stderr)
                     stdout_list.append(p.stdout)
 
-            reads=stderr_list + stdout_list
+            reads = stderr_list + stdout_list
             if len(reads) == 0:
                 return
 
             (read_list, write_list, except_list) = select.select(reads, [], [], timeout)
 
             for e in read_list:
-                line=e.readline().strip()
+                line = e.readline().strip()
                 color = 'green'
-                for elem in self._processes.keys():
-                    if e in (elem.stderr, elem.stdout):
-                        color = self._processes[elem][1]
-                        break
+                if self._colors.has_key(e):
+                    color = self._colors[e]
 
                 if e in stderr_list:
-                    out=colored(line, color=color, attrs=['reverse'])
+                    out = colored(line, color=color, attrs=['reverse'])
                 else:
-                    out=colored(line, color=color)
+                    out = colored(line, color=color)
 
                 print out
 
